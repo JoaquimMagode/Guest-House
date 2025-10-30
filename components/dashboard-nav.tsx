@@ -5,7 +5,7 @@ import type { Profile } from "@/lib/types"
 import { Building2, Calendar, ImageIcon, LayoutDashboard, LogOut, Users, Bed } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { signOut } from "@/lib/actions/auth"
 
 interface DashboardNavProps {
   profile: Profile
@@ -16,9 +16,7 @@ export function DashboardNav({ profile }: DashboardNavProps) {
   const router = useRouter()
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push("/")
+    await signOut()
   }
 
   const isAdmin = profile.role === "admin"

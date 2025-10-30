@@ -7,7 +7,7 @@ async function setupDatabase() {
       host: 'localhost',
       port: 3306,
       user: 'root',
-      password: 'cjMaster25@#'
+      password: 'admin'
     });
 
     console.log('Connected to MySQL server');
@@ -17,7 +17,7 @@ async function setupDatabase() {
     console.log('Database created or already exists');
 
     // Use the database
-    await connection.execute('USE guesthouse_db');
+    await connection.changeUser({database: 'guesthouse_db'});
 
     // Create tables
     const schema = `
