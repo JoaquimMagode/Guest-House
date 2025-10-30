@@ -1,34 +1,31 @@
-import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { AvailabilityManager } from "@/components/availability-manager"
+import { getCurrentUser } from "@/lib/auth"
+import db from "@/lib/db"
 
 export default async function AvailabilityPage() {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
   if (!user) {
     redirect("/auth/login")
   }
 
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
-
-  if (!profile) {
-    redirect("/auth/login")
-  }
-
   // Get all rooms with guesthouse info
-  const { data: rooms } = await supabase
-    .from("rooms")
-    .select(
-      `
-      *,
-      guesthouse:guesthouses(id, name, city)
-    `,
-    )
-    .order("name")
+  const [rows] = await db.execute(
+    `SELECT r.*, g.id as guesthouse_id, g.name as guesthouse_name, g.city as guesthouse_city
+     FROM rooms r
+     JOIN guesthouses g ON r.guesthouse_id = g.id
+     ORDER BY r.name`
+  )
+  
+  const rooms = (rows as any[]).map(row => ({
+    ...row,
+    guesthouse: {
+      id: row.guesthouse_id,
+      name: row.guesthouse_name,
+      city: row.guesthouse_city
+    }
+  }))
 
   return (
     <div className="space-y-6">
